@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Routes, Route, Link, useMatch } from 'react-router'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router'
 
 const Menu = () => {
   const padding = {
@@ -62,6 +62,7 @@ const CreateNew = (props) => {
   const [content, setContent] = useState('')
   const [author, setAuthor] = useState('')
   const [info, setInfo] = useState('')
+  const nav = useNavigate()
 
 
   const handleSubmit = (e) => {
@@ -72,6 +73,7 @@ const CreateNew = (props) => {
       info,
       votes: 0
     })
+    nav('/')
   }
 
   return (
