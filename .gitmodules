@@ -1,0 +1,9 @@
+[submodule "parts/p3/phonebook_be"]
+	path = parts/p3/phonebook_be
+	url = https://github.com/2underscores/phonebook.git
+[submodule "parts/p4/bloglist"]
+	path = parts/p4/bloglist
+	url = https://github.com/2underscores/bloglist.git
+[submodule "parts/p6/anecdotes-redux"]
+	path = parts/p6/anecdotes-redux
+	url = https://github.com/2underscores/anecdotes-redux-app.git
