@@ -1,17 +1,33 @@
 import { Link } from "react-router"
+import { Table, TableBody, TableCell, TableContainer, TableRow, Paper, Card, CardContent, Typography } from '@mui/material'
 
 const AnecdoteList = ({ anecdotes }) => (
-    <div>
-        <h2>Anecdotes</h2>
-        <ul>
-            {anecdotes.map(anecdote =>
-                <li key={anecdote.id} >
-                    <Link to={`/anecdotes/${anecdote.id}`}>
-                        {anecdote.content}
-                    </Link>
-                </li>)}
-        </ul>
-    </div>
+    <Card className="w-full max-w-lg mx-auto mt-8">
+        <CardContent>
+            <Typography variant="h5" className="mb-4">
+                Anecdotes
+            </Typography>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableBody>
+                        {anecdotes.map((ad) => (
+                            <TableRow
+                                key={ad.id}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell component="th" scope="row">
+                                    <Link to={`/anecdotes/${ad.id}`}>{ad.content}</Link>
+                                </TableCell>
+                                <TableCell component="th" scope="row">
+                                    {ad.author}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </CardContent>
+    </Card>
 )
 
 export default AnecdoteList

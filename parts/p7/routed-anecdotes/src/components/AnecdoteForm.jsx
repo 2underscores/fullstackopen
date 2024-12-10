@@ -1,5 +1,15 @@
 import { useNavigate } from 'react-router'
 import useField from '../hooks/useField'
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    TextField,
+    Typography,
+    Stack
+} from '@mui/material';
+
 
 const AnecdoteForm = ({ addNew }) => {
     const contentField = useField('text', '')
@@ -9,6 +19,7 @@ const AnecdoteForm = ({ addNew }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        console.log({ e });
         addNew({
             content: contentField.value,
             author: authorField.value,
@@ -26,25 +37,63 @@ const AnecdoteForm = ({ addNew }) => {
     }
 
     return (
-        <div>
-            <h2>create a new anecdote</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    content
-                    <input name='content' {...contentField.getInputProps()} />
-                </div>
-                <div>
-                    author
-                    <input name='author' {...authorField.getInputProps()} />
-                </div>
-                <div>
-                    url for more info
-                    <input name='info' {...infoField.getInputProps()} />
-                </div>
-                <button>create</button>
-                <button onClick={resetForm}>reset</button>
-            </form>
-        </div>
+        <Card className="w-full max-w-lg mx-auto mt-8">
+            <CardContent>
+                <Typography variant="h5" className="mb-4">
+                    Create New Blog Post
+                </Typography>
+
+                <Box component="form" onSubmit={handleSubmit} className="space-y-4">
+                    <Stack spacing={2}>
+                        <TextField
+                            fullWidth
+                            required
+                            label="Content"
+                            multiline
+                            rows={4}
+                            placeholder="Write your blog post content here..."
+                            className="mb-4"
+                            {...contentField.getInputProps()}
+                        />
+
+                        <TextField
+                            fullWidth
+                            required
+                            label="Author"
+                            placeholder="Enter author name"
+                            className="mb-4"
+                            {...authorField.getInputProps()}
+                        />
+
+                        <TextField
+                            fullWidth
+                            required
+                            label="URL"
+                            placeholder="Enter blog post URL"
+                            className="mb-6"
+                            {...infoField.getInputProps()}
+                        />
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                        >
+                            Submit Post
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            onClick={resetForm}
+                        >
+                            Reset
+                        </Button>
+                    </Stack>
+                </Box>
+            </CardContent>
+        </Card>
     )
 }
 

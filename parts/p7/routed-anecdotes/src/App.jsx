@@ -1,43 +1,12 @@
 import { useState } from 'react'
-import { Routes, Route, Link, useMatch } from 'react-router'
+import { Routes, Route, useMatch } from 'react-router'
 import AnecdoteList from './components/AnecdoteList'
 import Anecdote from './components/Anecdote'
 import AnecdoteForm from './components/AnecdoteForm'
-
-const Menu = () => {
-  const padding = {
-    paddingRight: 5
-  }
-  return (
-    <div>
-      <Link style={padding} to='/'>Anecdotes</Link>
-      <Link style={padding} to='/add-anecdote'>Create</Link>
-      <Link style={padding} to='/about'>About</Link>
-    </div>
-  )
-}
-
-const About = () => (
-  <div>
-    <h2>About anecdote app</h2>
-    <p>According to Wikipedia:</p>
-
-    <em>An anecdote is a brief, revealing account of an individual person or an incident.
-      Occasionally humorous, anecdotes differ from jokes because their primary purpose is not simply to provoke laughter but to reveal a truth more general than the brief tale itself,
-      such as to characterize a person by delineating a specific quirk or trait, to communicate an abstract idea about a person, place, or thing through the concrete details of a short narrative.
-      An anecdote is &quot;a story with a point.&quot;</em>
-
-    <p>Software engineering is full of excellent anecdotes, at this app you can find the best and add more.</p>
-  </div>
-)
-
-const Footer = () => (
-  <div>
-    Anecdote app for <a href='https://fullstackopen.com/'>Full Stack Open</a>.
-
-    See <a href='https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js'>https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js</a> for the source code.
-  </div>
-)
+import About from './components/About'
+import Footer from './components/Footer'
+import Navbar from './components/Navbar'
+import { Typography } from '@mui/material'
 
 const App = () => {
   const [anecdotes, setAnecdotes] = useState([
@@ -54,12 +23,69 @@ const App = () => {
       info: 'http://wiki.c2.com/?PrematureOptimization',
       votes: 0,
       id: 2
+    },
+    {
+      content: 'The first 90 percent of the code accounts for the first 90 percent of the development time. The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
+      author: 'Tom Cargill',
+      info: 'http://wiki.c2.com/?NinetyNinetyRule',
+      votes: 0,
+      id: 3
+    },
+    {
+      content: 'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
+      author: 'Martin Fowler',
+      info: 'https://martinfowler.com/books/refactoring.html',
+      votes: 0,
+      id: 4
+    },
+    {
+      content: 'Program testing can be used to show the presence of bugs, but never to show their absence!',
+      author: 'Edsger W. Dijkstra',
+      info: 'https://en.wikiquote.org/wiki/Edsger_W._Dijkstra',
+      votes: 0,
+      id: 5
+    },
+    {
+      content: 'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
+      author: 'Brian W. Kernighan',
+      info: 'https://en.wikiquote.org/wiki/Brian_Kernighan',
+      votes: 0,
+      id: 6
+    },
+    {
+      content: 'Simplicity is prerequisite for reliability.',
+      author: 'Edsger W. Dijkstra',
+      info: 'https://www.cs.utexas.edu/users/EWD/transcriptions/EWD03xx/EWD340.html',
+      votes: 0,
+      id: 7
+    },
+    {
+      content: 'There are only two hard things in Computer Science: cache invalidation and naming things.',
+      author: 'Phil Karlton',
+      info: 'https://martinfowler.com/bliki/TwoHardThings.html',
+      votes: 0,
+      id: 8
+    },
+    {
+      content: 'Good code is its own best documentation.',
+      author: 'Steve McConnell',
+      info: 'https://www.goodreads.com/book/show/4845.Code_Complete',
+      votes: 0,
+      id: 9
+    },
+    {
+      content: 'The best way to get a project done faster is to start sooner.',
+      author: 'Jim Highsmith',
+      info: 'https://www.agilealliance.org/agile101/',
+      votes: 0,
+      id: 10
     }
   ])
+
   const matchAnecdote = useMatch('/anecdotes/:id')
-  const matchedUrlParamAnecdote = matchAnecdote ? anecdotes.find(a=>Number(a.id) === Number(matchAnecdote.params.id)) : null
-  console.log({matchedUrlParamAnecdote});
-  
+  const matchedUrlParamAnecdote = matchAnecdote ? anecdotes.find(a => Number(a.id) === Number(matchAnecdote.params.id)) : null
+  console.log({ matchedUrlParamAnecdote });
+
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
@@ -82,14 +108,14 @@ const App = () => {
 
   return (
     <div>
-      <h1>Software anecdotes</h1>
-      <Menu />
+      <Navbar />
       <Routes>
         <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
         <Route path='/anecdotes/:id' element={<Anecdote anecdote={matchedUrlParamAnecdote} />} />
         <Route path='/add-anecdote' element={<AnecdoteForm addNew={addNew} />} />
         <Route path='/about' element={<About />} />
       </Routes>
+      <br />
       <Footer />
     </div>
   )
