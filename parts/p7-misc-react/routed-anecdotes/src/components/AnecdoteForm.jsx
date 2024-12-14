@@ -40,7 +40,7 @@ const AnecdoteForm = ({ addNew }) => {
         <Card className="w-full max-w-lg mx-auto mt-8">
             <CardContent>
                 <Typography variant="h5" className="mb-4">
-                    Create New Blog Post
+                    Create New Anecdote
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit} className="space-y-4">

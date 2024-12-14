@@ -6,7 +6,6 @@ import AnecdoteForm from './components/AnecdoteForm'
 import About from './components/About'
 import Footer from './components/Footer'
 import Navbar from './components/Navbar'
-import { Typography } from '@mui/material'
 
 const App = () => {
   const [anecdotes, setAnecdotes] = useState([
