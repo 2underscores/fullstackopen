@@ -3,13 +3,13 @@ import { AppBar, Container, Toolbar, Typography, Button } from '@mui/material';
 
 const Navigation = () => {
   const navItems = [
-    { label: 'Authors', path: '/' },
+    { label: 'Authors', path: '/authors' },
     { label: 'Books', path: '/books' },
     { label: 'Add Book', path: '/add' }
   ];
 
   return (
-    <AppBar position="static" elevation={0} sx={{ backgroundColor: 'darkorange' }}>
+    <AppBar position="static" elevation={0}>
       <Container>
         <Toolbar sx={{ display: 'flex' }}>
           <Typography

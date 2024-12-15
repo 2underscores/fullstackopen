@@ -1,4 +1,13 @@
 import { useState } from 'react'
+import { useMutation } from '@apollo/client'
+import { ADD_BOOK } from '../utils/queries'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Stack
+} from '@mui/material';
 
 const NewBook = () => {
   const [title, setTitle] = useState('')
@@ -6,11 +15,13 @@ const NewBook = () => {
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
+  const [createBook, createBookResult] = useMutation(ADD_BOOK)
 
   const submit = async (event) => {
     event.preventDefault()
 
     console.log('add book...')
+    createBook({ variables: { title, author, published: parseInt(published), genres } })
 
     setTitle('')
     setPublished('')
@@ -25,43 +36,59 @@ const NewBook = () => {
   }
 
   return (
-    <div>
-      <form onSubmit={submit}>
-        <div>
-          title
-          <input
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-        <div>
-          author
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-        <div>
-          published
-          <input
-            type="number"
-            value={published}
-            onChange={({ target }) => setPublished(target.value)}
-          />
-        </div>
-        <div>
-          <input
+    <Box component="form" onSubmit={submit} sx={{ maxWidth: 400 }}>
+      <Stack spacing={3}>
+        <TextField
+          fullWidth
+          label="Title"
+          value={title}
+          onChange={({ target }) => setTitle(target.value)}
+        />
+
+        <TextField
+          fullWidth
+          label="Author"
+          value={author}
+          onChange={({ target }) => setAuthor(target.value)}
+        />
+
+        <TextField
+          fullWidth
+          label="Published"
+          type="number"
+          value={published}
+          onChange={({ target }) => setPublished(target.value)}
+        />
+
+        <Stack direction="row" spacing={2}>
+          <TextField
+            fullWidth
+            label="Genre"
             value={genre}
             onChange={({ target }) => setGenre(target.value)}
           />
-          <button onClick={addGenre} type="button">
-            add genre
-          </button>
-        </div>
-        <div>genres: {genres.join(' ')}</div>
-        <button type="submit">create book</button>
-      </form>
-    </div>
+          <Button
+            variant="contained"
+            onClick={addGenre}
+          >
+            Add Genre
+          </Button>
+        </Stack>
+
+        <Typography>
+          Genres: {genres.join(' ')}
+        </Typography>
+
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={createBookResult.loading}
+        >
+          {createBookResult.loading ? 'Creating...' : 'Create'}
+        </Button>
+      </Stack>
+    </Box>
   )
 }
 
