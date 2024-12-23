@@ -31,7 +31,7 @@ const Navigation = () => {
             {navItems.map((item) => (
               <Button
                 key={item.path}
-                component={Link}
+                component={Link} // component = change the semantic meaning while keeping the same look (Link look like button here). Avoid wrap button in Link.
                 to={item.path}
                 sx={{
                   color: 'white',

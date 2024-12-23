@@ -5,8 +5,9 @@ import {
   Box,
   Button,
   TextField,
-  Typography,
-  Stack
+  // Typography,
+  Stack,
+  Chip,
 } from '@mui/material';
 
 const NewBook = () => {
@@ -75,9 +76,11 @@ const NewBook = () => {
           </Button>
         </Stack>
 
-        <Typography>
-          Genres: {genres.join(' ')}
-        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {genres.map((g) => (
+            <Chip key={g} label={g} color="primary" variant="outlined"/>
+          ))}
+        </Box>
 
         <Button
           variant="contained"

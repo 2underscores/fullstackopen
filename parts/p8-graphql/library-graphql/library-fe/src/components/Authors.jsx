@@ -10,7 +10,7 @@ import { EDIT_AUTHOR, ALL_AUTHORS } from '../utils/queries';
 const Authors = () => {
   const { loading, data } = useQuery(ALL_AUTHORS);
   const [editAuthor] = useMutation(EDIT_AUTHOR, { refetchQueries: [{ query: ALL_AUTHORS }] });
-
+  console.log({loading, data});
   const [editingAuthor, setEditingAuthor] = useState(null); // Name of the author being edited
   const [birthYear, setBirthYear] = useState(''); // Current value for inline edit
 
