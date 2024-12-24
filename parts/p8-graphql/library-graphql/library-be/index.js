@@ -1,6 +1,8 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
-const {v4: uuidv4} = require('uuid')
+const { v4: uuidv4 } = require('uuid')
+const { config } = require('./utils/config')
+const mongoose = require('mongoose')
 
 let authors = [
     {
@@ -81,10 +83,6 @@ let books = [
     },
 ]
 
-/*
-  you can remove the placeholder query once your first one has been implemented 
-*/
-
 const typeDefs = `
 type Book {
     title: String!
@@ -103,11 +101,14 @@ type Author {
 
 type Query {
     bookCount: Int!
-    personCount: Int!
+
+    authorCount: Int!
+
     allBooks(
         author: String
         genre: String
     ): [Book!]!
+    
     allAuthors: [Author!]!
 }
 
@@ -118,6 +119,7 @@ type Mutation {
         author: String!
         genres: [String!]!
     ): Book!
+    
     editAuthor(
         name: String!
         setBornTo: Int!
@@ -126,11 +128,17 @@ type Mutation {
 `
 
 const resolvers = {
+    Author: {
+        bookCount: (root) => {
+            const byAuthor = (b) => b.author === root.name
+            return books.filter(byAuthor).length
+        }
+    },
     Query: {
         bookCount: () => books.length,
-        personCount: () => authors.length,
+        authorCount: () => authors.length,
         allBooks: (root, args) => {
-            console.log({args});
+            console.log({ args });
             const byAuthor = (b) => args.author ? b.author === args.author : true
             const byGenre = (b) => args.genre ? b.genres.includes(args.genre) : true
             return books.filter(byAuthor).filter(byGenre)
@@ -139,33 +147,36 @@ const resolvers = {
     },
     Mutation: {
         addBook: (root, args) => {
-            console.log({args});
-            const book = {...args, id: uuidv4()}
+            console.log({ args });
+            const book = { ...args, id: uuidv4() }
             books = books.concat(book)
             // Add author if not exist
             const existingAuthor = authors.find(a => a.name === book.author)
             if (!existingAuthor) {
-                const newAuthor = {name: book.author, id: uuidv4()}
+                const newAuthor = { name: book.author, id: uuidv4() }
                 authors = authors.concat(newAuthor)
             }
             return book
         },
         editAuthor: (root, args) => {
-            console.log({args});
+            console.log({ args });
             const author = authors.find(a => a.name === args.name)
             if (!author) return null
-            const updatedAuthor = {...author, born: args.setBornTo}
+            const updatedAuthor = { ...author, born: args.setBornTo }
             authors = authors.map(a => a.name === args.name ? updatedAuthor : a)
             return updatedAuthor
         }
     },
-    Author: {
-        bookCount: (root) => {
-            const byAuthor = (b) => b.author === root.name
-            return books.filter(byAuthor).length
-        }
-    }
 }
+
+const mongoUrl = `mongodb+srv://${config.mongo.user}:${config.mongo.password}@${config.mongo.cluster}.ljiec.mongodb.net/${config.mongo.table}?retryWrites=true&w=majority&appName=${config.mongo.cluster}`
+mongoose.connect(mongoUrl)
+.then(() => {
+    console.log(`Connected to MongoDB at ${mongoUrl}`)
+})
+.catch((error) => {
+    console.error(`Failed to connect to MongoDB: ${error.message}`)
+})
 
 const server = new ApolloServer({
     typeDefs,
@@ -173,7 +184,7 @@ const server = new ApolloServer({
 })
 
 startStandaloneServer(server, {
-    listen: { port: 4000 },
+    listen: { port: config.server.port },
 }).then(({ url }) => {
     console.log(`Server ready at ${url}`)
 })
