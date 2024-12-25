@@ -14,7 +14,12 @@ export const ALL_BOOKS = gql`
 query GetAllBooks {
   allBooks {
     title
-    author
+    author {
+      bookCount
+      born
+      id
+      name
+    }
     genres
     id
     published
@@ -38,7 +43,12 @@ mutation AddBook(
     id
     published
     title
-    author
+    author {
+      bookCount
+      born
+      id
+      name
+    }
   }
 }
 `

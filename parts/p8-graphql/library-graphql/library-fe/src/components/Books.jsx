@@ -28,14 +28,16 @@ const Books = () => {
               <TableCell>Title</TableCell>
               <TableCell>Author</TableCell>
               <TableCell>Published</TableCell>
+              <TableCell>Genres</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {booksResult.data.allBooks.map((a) => (
               <TableRow key={a.title}>
                 <TableCell>{a.title}</TableCell>
-                <TableCell>{a.author}</TableCell>
+                <TableCell>{a.author.name}</TableCell>
                 <TableCell>{a.published}</TableCell>
+                <TableCell>{a.genres.join(', ')}</TableCell>
               </TableRow>
             ))}
           </TableBody>
