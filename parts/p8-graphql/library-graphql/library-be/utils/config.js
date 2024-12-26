@@ -32,6 +32,9 @@ const config = {
     server: {
         port: getEnvVar('PORT'),
     },
+    auth: {
+        saltRounds: getEnvVar('SALT_ROUNDS'),
+    }
 }
 
 Object.freeze(config)

@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid')
 const { config } = require('./utils/config')
 const mongoose = require('mongoose')
 const { Book, Author, User } = require('./models/models')
+const bcrypt = require('bcrypt')
 
 // let authors = [
 //     {
@@ -224,7 +225,14 @@ const resolvers = {
             return author
         },
         createUser: async (root, args) => {
-            const user = new User({ ...args, id: uuidv4() })
+            console.log({ args, config });
+            const passwordHash = await bcrypt.hash(args.password, Number(config.auth.saltRounds))
+            const user = new User({
+                id: uuidv4(),
+                username: args.username,
+                passwordHash,
+                favoriteGenre: args.favoriteGenre
+            })
             await user.save()
             return user
         },
@@ -241,7 +249,9 @@ const resolvers = {
                 return null
             }
             const user = users[0]
-            if (user.password === args.password) { // TODO: Proper comparison
+            const passwordCompare = await bcrypt.compare(args.password, user.passwordHash)
+            console.log({ passwordCompare });
+            if (passwordCompare) {
                 console.log({ message: 'User logged in', user });
                 return {value: "token_1234567890"} // TODO: Return token
             }
