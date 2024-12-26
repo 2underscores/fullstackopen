@@ -3,7 +3,7 @@ const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v4: uuidv4 } = require('uuid')
 const { config } = require('./utils/config')
 const mongoose = require('mongoose')
-const { Book, Author } = require('./models/models')
+const { Book, Author, User } = require('./models/models')
 
 // let authors = [
 //     {
@@ -100,6 +100,16 @@ type Author {
     bookCount: Int!
 }
 
+type User {
+    username: String!
+    favoriteGenre: String
+    id: ID!
+}
+
+type Token {
+    value: String!
+}
+
 type Query {
     bookCount: Int!
 
@@ -111,6 +121,10 @@ type Query {
     ): [Book!]!
     
     allAuthors: [Author!]!
+
+    allUsers: [User!]!
+
+    me: User!
 }
 
 type Mutation {
@@ -125,6 +139,17 @@ type Mutation {
         name: String!
         setBornTo: Int!
     ): Author
+
+    createUser(
+        username: String!
+        password: String!
+        favoriteGenre: String
+    ): User
+
+    login(
+        username: String!
+        password: String!
+    ): Token
 }
 `
 
@@ -132,7 +157,6 @@ type Mutation {
 // const booksMongo = Book.find({})
 // console.log({ booksMongo })
 // console.log('HJi');
-
 
 
 const resolvers = {
@@ -166,6 +190,11 @@ const resolvers = {
             const authors = await Author.find({})
             console.log({ authors });
             return authors
+        },
+        allUsers: async () => {
+            const users = await User.find({})
+            console.log({ users })
+            return users
         }
     },
     Mutation: {
@@ -193,6 +222,31 @@ const resolvers = {
             author.born = args.setBornTo
             await author.save()
             return author
+        },
+        createUser: async (root, args) => {
+            const user = new User({ ...args, id: uuidv4() })
+            await user.save()
+            return user
+        },
+        login: async (root, args) => {
+            const users = await User.find({ username: args.username })
+            console.log({ args, users });
+            // Get User
+            // No signalling as all errors return null
+            if (users.length === 0) {
+                console.log({ message: 'User not found', args, users });
+                return null
+            } else if (users.length > 1) {
+                console.log({ message: 'Multiple users found', args, users });
+                return null
+            }
+            const user = users[0]
+            if (user.password === args.password) { // TODO: Proper comparison
+                console.log({ message: 'User logged in', user });
+                return {value: "token_1234567890"} // TODO: Return token
+            }
+            console.log({ message: 'Wrong password', args, user });
+            return null
         }
     },
 }
