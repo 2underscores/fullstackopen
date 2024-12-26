@@ -5,6 +5,7 @@ const { config } = require('./utils/config')
 const mongoose = require('mongoose')
 const { Book, Author, User } = require('./models/models')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 // let authors = [
 //     {
@@ -251,9 +252,20 @@ const resolvers = {
             const user = users[0]
             const passwordCompare = await bcrypt.compare(args.password, user.passwordHash)
             console.log({ passwordCompare });
+            // Create token
             if (passwordCompare) {
                 console.log({ message: 'User logged in', user });
-                return {value: "token_1234567890"} // TODO: Return token
+                const tokenContents = {
+                    username: user.username,
+                    id: user.id
+                }
+                return {value: jwt.sign(
+                    tokenContents,
+                    config.auth.secret,
+                    {
+                        expiresIn: '1h'
+                    }
+                )}
             }
             console.log({ message: 'Wrong password', args, user });
             return null

@@ -33,7 +33,8 @@ const config = {
         port: getEnvVar('PORT'),
     },
     auth: {
-        saltRounds: getEnvVar('SALT_ROUNDS'),
+        secret: getEnvVar('TOKEN_SECRET'),
+        saltRounds: getEnvVar('HASH_SALT_ROUNDS'),
     }
 }
 
