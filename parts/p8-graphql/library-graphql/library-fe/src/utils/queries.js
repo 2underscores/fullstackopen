@@ -69,3 +69,13 @@ mutation setBornYear(
   }
 }
 `
+
+export const LIST_USERS = gql`
+query listUsers {
+  allUsers {
+    id
+    username
+    favoriteGenre
+  }
+}
+`

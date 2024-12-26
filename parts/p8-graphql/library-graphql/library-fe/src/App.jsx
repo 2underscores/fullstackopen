@@ -4,6 +4,7 @@ import NewBook from "./components/NewBook";
 import Navigation from './components/Navigation';
 import { Routes, Route } from "react-router";
 import { Box, Container, CssBaseline, Typography } from "@mui/material";
+import Users from "./components/Users";
 
 const App = () => {
   return (<>
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/authors" element={<Authors />} />
           <Route path="/books" element={<Books />} />
           <Route path="/add" element={<NewBook />} />
+          <Route path="/users" element={<Users />} />
         </Routes>
       </Box>
     </Container>

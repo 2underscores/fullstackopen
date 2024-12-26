@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const { Book, Author, User } = require('./models/models')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { GraphQLError } = require('graphql')
 
 // let authors = [
 //     {
@@ -126,7 +127,7 @@ type Query {
 
     allUsers: [User!]!
 
-    me: User!
+    me: User
 }
 
 type Mutation {
@@ -197,13 +198,27 @@ const resolvers = {
             const users = await User.find({})
             console.log({ users })
             return users
-        }
+        },
+        me: async (root, args, context) => {
+            console.log({ context });
+            return context.currentUser
+        },
     },
     Mutation: {
-        addBook: async (root, args) => {
+        addBook: async (root, args, context) => {
             console.log({ args });
+            // Check if user is logged in
+            const currentUser = context.currentUser
+            if (!currentUser) {
+                console.log({ message: 'User not logged in', args, currentUser });
+                throw new GraphQLError('not authenticated', {
+                    extensions: {
+                        code: 'BAD_USER_INPUT',
+                    }
+                })
+            }
             // Create new author if not already exist
-            let author = await Author.findOne({name: args.author})
+            let author = await Author.findOne({ name: args.author })
             console.log({ existingAuthor: author });
             if (!author) {
                 author = new Author({ name: args.author, id: uuidv4() })
@@ -217,9 +232,19 @@ const resolvers = {
             await newBook.populate('author')
             return newBook
         },
-        editAuthor: async (root, args) => {
+        editAuthor: async (root, args, context) => {
             console.log({ args });
-            const author = await Author.findOne({name: args.name})
+            // Check if user is logged in
+            const currentUser = context.currentUser
+            if (!currentUser) {
+                console.log({ message: 'User not logged in', args, currentUser });
+                throw new GraphQLError('not authenticated', {
+                    extensions: {
+                        code: 'BAD_USER_INPUT',
+                    }
+                })
+            }
+            const author = await Author.findOne({ name: args.name })
             if (!author) return null
             author.born = args.setBornTo
             await author.save()
@@ -259,13 +284,15 @@ const resolvers = {
                     username: user.username,
                     id: user.id
                 }
-                return {value: jwt.sign(
-                    tokenContents,
-                    config.auth.secret,
-                    {
-                        expiresIn: '1h'
-                    }
-                )}
+                return {
+                    value: jwt.sign(
+                        tokenContents,
+                        config.auth.jwtSecret,
+                        {
+                            expiresIn: '1h'
+                        }
+                    )
+                }
             }
             console.log({ message: 'Wrong password', args, user });
             return null
@@ -275,12 +302,12 @@ const resolvers = {
 
 const mongoUrl = `mongodb+srv://${config.mongo.user}:${config.mongo.password}@${config.mongo.cluster}.ljiec.mongodb.net/${config.mongo.table}?retryWrites=true&w=majority&appName=${config.mongo.cluster}`
 mongoose.connect(mongoUrl)
-.then(() => {
-    console.log(`Connected to MongoDB at ${mongoUrl}`)
-})
-.catch((error) => {
-    console.error(`Failed to connect to MongoDB: ${error.message}`)
-})
+    .then(() => {
+        console.log(`Connected to MongoDB at ${mongoUrl}`)
+    })
+    .catch((error) => {
+        console.error(`Failed to connect to MongoDB: ${error.message}`)
+    })
 
 const server = new ApolloServer({
     typeDefs,
@@ -289,6 +316,22 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
     listen: { port: config.server.port },
+    context: async ({ req, res }) => {
+        let currentUser = null
+        const authHeader = req.headers?.authorization ?? null
+        // console.log({ authHeader });
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return { currentUser }
+        }
+        const decodedToken = jwt.verify(authHeader.substring(7), config.auth.jwtSecret)
+        // console.log({ decodedToken });
+        if (!decodedToken) {
+            return { currentUser }
+        }
+        currentUser = await User.findById(decodedToken.id)
+        // console.log({ currentUser })
+        return { currentUser }
+    },
 }).then(({ url }) => {
     console.log(`Server ready at ${url}`)
 })

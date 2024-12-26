@@ -5,7 +5,8 @@ const Navigation = () => {
   const navItems = [
     { label: 'Authors', path: '/authors' },
     { label: 'Books', path: '/books' },
-    { label: 'Add Book', path: '/add' }
+    { label: 'Add Book', path: '/add' },
+    { label: 'Users', path: '/users' },
   ];
 
   return (
