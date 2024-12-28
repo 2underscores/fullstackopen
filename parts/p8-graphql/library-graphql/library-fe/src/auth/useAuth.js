@@ -15,6 +15,7 @@ const getTokenFromStorage = () => {
     const tokenExpired = decodedToken.exp < Date.now() / 1000;
     if (tokenExpired) {
         console.log({ message: 'Token in storage expired, discarding' });
+        localStorage.removeItem(authStoreKey)
         return null
     }
     return decodedToken

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
-import { ADD_BOOK } from '../utils/queries'
+import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../utils/queries'
 import {
   Box,
   Button,
@@ -16,7 +16,15 @@ const NewBook = () => {
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
-  const [createBook, createBookResult] = useMutation(ADD_BOOK)
+  const [createBook, createBookResult] = useMutation(
+    ADD_BOOK,
+    {
+      refetchQueries: [
+        { query: ALL_AUTHORS },
+        { query: ALL_BOOKS },
+      ]
+    }
+  )
 
   const submit = async (event) => {
     event.preventDefault()
@@ -78,7 +86,7 @@ const NewBook = () => {
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {genres.map((g) => (
-            <Chip key={g} label={g} color="primary" variant="outlined"/>
+            <Chip key={g} label={g} color="primary" variant="outlined" />
           ))}
         </Box>
 
