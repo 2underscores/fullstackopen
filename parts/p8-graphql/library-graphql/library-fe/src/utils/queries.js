@@ -70,6 +70,14 @@ mutation setBornYear(
 }
 `
 
+export const LOGIN_USER = gql`
+mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    value
+  }
+}
+`
+
 export const LIST_USERS = gql`
 query listUsers {
   allUsers {

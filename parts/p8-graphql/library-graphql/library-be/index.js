@@ -161,6 +161,18 @@ type Mutation {
 // console.log({ booksMongo })
 // console.log('HJi');
 
+const assertLoggedIn = (context) => {
+    const currentUser = context.currentUser
+    if (!currentUser) {
+        console.log({ message: 'User not logged in', currentUser });
+        throw new GraphQLError('not authenticated', {
+            extensions: {
+                code: 'BAD_USER_INPUT',
+            }
+        })
+    }
+}
+
 
 const resolvers = {
     Author: {
@@ -171,7 +183,7 @@ const resolvers = {
         }
     },
     Query: {
-        bookCount: async () => {
+        bookCount: async (root, args, context) => {
             const books = await Book.find({})
             console.log({ books })
             return books.length
@@ -181,8 +193,8 @@ const resolvers = {
             console.log({ authors });
             return authors.length
         },
-        allBooks: async (root, args) => {
-            console.log({ args });
+        allBooks: async (root, args, context) => {
+            console.log({ args, context });
             const books = await Book.find({}).populate('author')
             console.log({ books });
             const byAuthor = (b) => args.author ? b.author.name === args.author : true
@@ -207,16 +219,7 @@ const resolvers = {
     Mutation: {
         addBook: async (root, args, context) => {
             console.log({ args });
-            // Check if user is logged in
-            const currentUser = context.currentUser
-            if (!currentUser) {
-                console.log({ message: 'User not logged in', args, currentUser });
-                throw new GraphQLError('not authenticated', {
-                    extensions: {
-                        code: 'BAD_USER_INPUT',
-                    }
-                })
-            }
+            assertLoggedIn(context)
             // Create new author if not already exist
             let author = await Author.findOne({ name: args.author })
             console.log({ existingAuthor: author });
@@ -234,16 +237,7 @@ const resolvers = {
         },
         editAuthor: async (root, args, context) => {
             console.log({ args });
-            // Check if user is logged in
-            const currentUser = context.currentUser
-            if (!currentUser) {
-                console.log({ message: 'User not logged in', args, currentUser });
-                throw new GraphQLError('not authenticated', {
-                    extensions: {
-                        code: 'BAD_USER_INPUT',
-                    }
-                })
-            }
+            assertLoggedIn(context)
             const author = await Author.findOne({ name: args.name })
             if (!author) return null
             author.born = args.setBornTo
@@ -324,6 +318,7 @@ startStandaloneServer(server, {
             return { currentUser }
         }
         const decodedToken = jwt.verify(authHeader.substring(7), config.auth.jwtSecret)
+        // FIXME: Errors if expired, crashes whole API, nothing works and can't login
         // console.log({ decodedToken });
         if (!decodedToken) {
             return { currentUser }

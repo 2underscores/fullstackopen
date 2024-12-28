@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
 import { AppBar, Container, Toolbar, Typography, Button } from '@mui/material';
+import { useState } from 'react';
+import { useAuthContext } from '../auth/AuthContext';
 
 const Navigation = () => {
   const navItems = [
@@ -9,10 +11,12 @@ const Navigation = () => {
     { label: 'Users', path: '/users' },
   ];
 
+  const [auth, setAuth, clearAuth] = useAuthContext()
+
   return (
     <AppBar position="static" elevation={0}>
       <Container>
-        <Toolbar sx={{ display: 'flex' }}>
+        <Toolbar sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
           <Typography
             variant="h6"
             noWrap
@@ -28,7 +32,7 @@ const Navigation = () => {
           >
             LIBRARY
           </Typography>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             {navItems.map((item) => (
               <Button
                 key={item.path}
@@ -46,6 +50,19 @@ const Navigation = () => {
               </Button>
             ))}
           </div>
+          <Button
+            sx={{
+              color: 'white',
+              '&:hover': {
+                color: 'white',
+              },
+            }}
+            component={auth ? 'button' : Link}
+            onClick={auth ? clearAuth : undefined}
+            to={auth ? undefined : '/login'}
+          >
+            {auth ? `Logout ${auth.username}` : 'Login'}
+          </Button>
         </Toolbar>
       </Container>
     </AppBar>

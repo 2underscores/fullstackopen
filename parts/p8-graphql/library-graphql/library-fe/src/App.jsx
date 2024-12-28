@@ -5,6 +5,7 @@ import Navigation from './components/Navigation';
 import { Routes, Route } from "react-router";
 import { Box, Container, CssBaseline, Typography } from "@mui/material";
 import Users from "./components/Users";
+import Login from "./components/Login";
 
 const App = () => {
   return (<>
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="/books" element={<Books />} />
           <Route path="/add" element={<NewBook />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </Box>
     </Container>
