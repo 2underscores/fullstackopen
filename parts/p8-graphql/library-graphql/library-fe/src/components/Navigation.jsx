@@ -1,14 +1,13 @@
 import { Link } from 'react-router';
 import { AppBar, Container, Toolbar, Typography, Button } from '@mui/material';
-import { useState } from 'react';
 import { useAuthContext } from '../auth/AuthContext';
 
 const Navigation = () => {
   const navItems = [
-    { label: 'Authors', path: '/authors' },
-    { label: 'Books', path: '/books' },
-    { label: 'Add Book', path: '/add' },
-    { label: 'Users', path: '/users' },
+    { label: 'Authors', path: '/authors', authReq: false },
+    { label: 'Books', path: '/books', authReq: false },
+    { label: 'Add Book', path: '/add', authReq: true },
+    { label: 'Users', path: '/users', authReq: false },
   ];
 
   const [auth, setAuth, clearAuth] = useAuthContext()
@@ -33,22 +32,27 @@ const Navigation = () => {
             LIBRARY
           </Typography>
           <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                component={Link} // component = change the semantic meaning while keeping the same look (Link look like button here). Avoid wrap button in Link.
-                to={item.path}
-                sx={{
-                  color: 'white',
-                  marginLeft: '1rem',
-                  '&:hover': {
+            {navItems
+              .map((item) => (
+                <Button
+                  key={item.path}
+                  component={Link} // component = change the semantic meaning while keeping the same look (Link look like button here). Avoid wrap button in Link.
+                  to={item.path}
+                  sx={{
                     color: 'white',
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
+                    marginLeft: '1rem',
+                    '&:hover': {
+                      color: 'white',
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              )).filter((element, idx)=>
+                // Hide any that are auth protected if no auth
+                (navItems[idx].authReq === false || auth)
+              )
+            }
           </div>
           <Button
             sx={{
