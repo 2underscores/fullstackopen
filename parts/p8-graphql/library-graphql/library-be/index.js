@@ -1,6 +1,13 @@
-const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
 const { config } = require('./utils/config')
+
+const { ApolloServer } = require('@apollo/server')
+const { expressMiddleware } = require('@apollo/server/express4')
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer')
+const { makeExecutableSchema } = require('@graphql-tools/schema')
+const express = require('express')
+const cors = require('cors')
+const http = require('http')
+
 const mongoose = require('mongoose')
 const { User } = require('./models/models')
 const jwt = require('jsonwebtoken')
@@ -16,30 +23,49 @@ mongoose.connect(mongoUrl)
         console.error(`Failed to connect to MongoDB: ${error.message}`)
     })
 
-const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-})
 
-startStandaloneServer(server, {
-    listen: { port: config.server.port },
-    context: async ({ req, res }) => {
+const serverStart = async () => {
+    const app = express()
+    const httpServer = http.createServer(app)
+    const apolloServer = new ApolloServer({
+        schema: makeExecutableSchema({ typeDefs, resolvers }),
+        plugins: [
+            ApolloServerPluginDrainHttpServer({ httpServer }) // ?
+        ]
+    })
+    const getUserFromAuth = async ({ req, res }) => {
         let currentUser = null
         const authHeader = req.headers?.authorization ?? null
-        // console.log({ authHeader });
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return { currentUser }
+            return currentUser
         }
-        const decodedToken = jwt.verify(authHeader.substring(7), config.auth.jwtSecret)
+        const encodedToken = authHeader.substring(7)
+        console.log({ encodedToken })
+        const decodedToken = jwt.verify(encodedToken, config.auth.jwtSecret)
         // FIXME: Errors if expired, crashes whole API, nothing works and can't login
-        // console.log({ decodedToken });
         if (!decodedToken) {
-            return { currentUser }
+            return currentUser
         }
         currentUser = await User.findById(decodedToken.id)
-        // console.log({ currentUser })
-        return { currentUser }
-    },
-}).then(({ url }) => {
-    console.log(`Server ready at ${url}`)
-})
+        return currentUser
+    }
+    await apolloServer.start()
+    app.use(
+        '/',
+        cors(),
+        express.json(),
+        expressMiddleware(apolloServer, {
+            context: async ({ req, res }) => {
+                const currentUser = getUserFromAuth({ req, res })
+                return { currentUser }
+            },
+        })
+    )
+    const PORT = config.server.port
+    httpServer.listen(PORT, () => {
+        console.log(`Server is now running on http://localhost:${PORT}`);
+
+    })
+}
+
+serverStart()
