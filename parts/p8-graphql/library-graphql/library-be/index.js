@@ -23,8 +23,33 @@ mongoose.connect(mongoUrl)
         console.error(`Failed to connect to MongoDB: ${error.message}`)
     })
 
+const getUserFromAuth = async ({ req, res }) => {
+    let currentUser = null
+    const authHeader = req.headers?.authorization ?? null
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return currentUser
+    }
+    const encodedToken = authHeader.substring(7)
+    try {
+        const decodedToken = jwt.verify(encodedToken, config.auth.jwtSecret)
+        if (!decodedToken) {
+            return currentUser
+        }
+        currentUser = await User.findById(decodedToken.id)
+        return currentUser
+    } catch (e) {
+        console.log(`ERROR: ${e.name} - ${e.message}`)
+        if (e.name === 'TokenExpiredError') {
+            return null
+        } else {
+            // Errors here from a client using a bad token crash the entire server for everyone
+            throw e
+        }
+    }
+}
 
 const serverStart = async () => {
+
     const app = express()
     const httpServer = http.createServer(app)
     const apolloServer = new ApolloServer({
@@ -33,22 +58,6 @@ const serverStart = async () => {
             ApolloServerPluginDrainHttpServer({ httpServer }) // ?
         ]
     })
-    const getUserFromAuth = async ({ req, res }) => {
-        let currentUser = null
-        const authHeader = req.headers?.authorization ?? null
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return currentUser
-        }
-        const encodedToken = authHeader.substring(7)
-        console.log({ encodedToken })
-        const decodedToken = jwt.verify(encodedToken, config.auth.jwtSecret)
-        // FIXME: Errors if expired, crashes whole API, nothing works and can't login
-        if (!decodedToken) {
-            return currentUser
-        }
-        currentUser = await User.findById(decodedToken.id)
-        return currentUser
-    }
     await apolloServer.start()
     app.use(
         '/',

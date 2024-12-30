@@ -126,7 +126,7 @@ const resolvers = {
                         tokenContents,
                         config.auth.jwtSecret,
                         {
-                            expiresIn: '1h'
+                            expiresIn: '10h'
                         }
                     )
                 }
