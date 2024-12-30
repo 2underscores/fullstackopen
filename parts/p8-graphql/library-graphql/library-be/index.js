@@ -7,6 +7,8 @@ const { makeExecutableSchema } = require('@graphql-tools/schema')
 const express = require('express')
 const cors = require('cors')
 const http = require('http')
+const { WebSocketServer } = require('ws')
+const { useServer } = require('graphql-ws/lib/use/ws')
 
 const mongoose = require('mongoose')
 const { User } = require('./models/models')
@@ -49,16 +51,34 @@ const getUserFromAuth = async ({ req, res }) => {
 }
 
 const serverStart = async () => {
-
+    // Parent HTTP Server
     const app = express()
     const httpServer = http.createServer(app)
+    // Websocket Server
+    const wsServer = new WebSocketServer({
+        server: httpServer,
+        path: '/',
+    })
+    // Apollo GraphQL Server
+    const schema = makeExecutableSchema({ typeDefs, resolvers })
+    const serverCleanup = useServer({ schema }, wsServer)
     const apolloServer = new ApolloServer({
-        schema: makeExecutableSchema({ typeDefs, resolvers }),
+        schema,
         plugins: [
-            ApolloServerPluginDrainHttpServer({ httpServer }) // ?
+            ApolloServerPluginDrainHttpServer({ httpServer }), // ?
+            {
+                async serverWillStart() {
+                    return {
+                        async drainServer() {
+                            await serverCleanup.dispose();
+                        },
+                    };
+                },
+            },
         ]
     })
     await apolloServer.start()
+
     app.use(
         '/',
         cors(),

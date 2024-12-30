@@ -4,6 +4,9 @@ const { Book, Author, User } = require('./models/models')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { GraphQLError } = require('graphql')
+const { PubSub } = require('graphql-subscriptions')
+
+const pubsub = new PubSub()
 
 const assertLoggedIn = (context) => {
     const currentUser = context.currentUser
@@ -76,6 +79,7 @@ const resolvers = {
             const newBook = new Book({ ...args, id: uuidv4(), author: author.id })
             await newBook.save()
             await newBook.populate('author')
+            pubsub.publish('BOOK_ADDED', { bookAdded: newBook })
             return newBook
         },
         editAuthor: async (root, args, context) => {
@@ -134,6 +138,11 @@ const resolvers = {
             console.log({ message: 'Wrong password', args, user });
             return null
         }
+    },
+    Subscription: {
+        bookAdded: {
+            subscribe: () => pubsub.asyncIterableIterator('BOOK_ADDED')
+        },
     },
 }
 
