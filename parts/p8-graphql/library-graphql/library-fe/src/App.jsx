@@ -7,7 +7,22 @@ import { Box, Container, CssBaseline, Typography } from "@mui/material";
 import Users from "./components/Users";
 import Login from "./components/Login";
 
+import { useSubscription } from '@apollo/client'
+import { ALL_BOOKS, BOOK_ADDED } from "./utils/queries";
+
 const App = () => {
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      console.log({ message: 'Websocket received Book Added', data })
+      const newBook = data.data.bookAdded
+      client.cache.updateQuery(
+        { query: ALL_BOOKS },
+        ({ allBooks }) => ({ allBooks: allBooks.concat(newBook) })
+      )
+    }
+  })
+
   return (<>
     <CssBaseline />
     <Navigation />

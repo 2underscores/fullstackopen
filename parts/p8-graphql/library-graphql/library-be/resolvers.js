@@ -8,10 +8,12 @@ const { PubSub } = require('graphql-subscriptions')
 
 const pubsub = new PubSub()
 
-const assertLoggedIn = (context) => {
-    const currentUser = context.currentUser
+const assertLoggedIn = async (context) => {
+    const currentUser = await context.currentUser
+    console.log({currentUser, context})
     if (!currentUser) {
         console.log({ message: 'User not logged in', currentUser });
+        // FIXME: This crashes whole server?
         throw new GraphQLError('not authenticated', {
             extensions: {
                 code: 'BAD_USER_INPUT',

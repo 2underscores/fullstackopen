@@ -87,3 +87,20 @@ query listUsers {
   }
 }
 `
+
+export const BOOK_ADDED = gql`
+subscription BookAdded {
+  bookAdded {
+    genres
+    id
+    published
+    title
+    author {
+      name
+      id
+      born
+      bookCount
+    }
+  }
+}
+`
