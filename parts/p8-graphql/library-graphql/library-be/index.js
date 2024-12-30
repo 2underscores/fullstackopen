@@ -10,8 +10,9 @@ const http = require('http')
 const { WebSocketServer } = require('ws')
 const { useServer } = require('graphql-ws/lib/use/ws')
 
+const DataLoader = require('dataloader')
 const mongoose = require('mongoose')
-const { User } = require('./models/models')
+const { User, Book } = require('./models/models')
 const jwt = require('jsonwebtoken')
 const typeDefs = require('./schema')
 const resolvers = require('./resolvers')
@@ -24,7 +25,9 @@ mongoose.connect(mongoUrl)
     .catch((error) => {
         console.error(`Failed to connect to MongoDB: ${error.message}`)
     })
+mongoose.set('debug', true);
 
+// CONTEXTS FOR GRAPHQL QUERIES
 const getUserFromAuth = async ({ req, res }) => {
     let currentUser = null
     const authHeader = req.headers?.authorization ?? null
@@ -49,6 +52,17 @@ const getUserFromAuth = async ({ req, res }) => {
         }
     }
 }
+
+// Avoid N+1 Problem on author book counts with request scoped cache
+const batchBookCounts = async (authorIds) => {
+    const books = await Book.find({ author: { $in: authorIds } })
+    const countMap = books.reduce((acc, book) => {
+      const authorId = String(book.author)
+      acc.set(authorId, (acc.get(authorId) || 0) + 1)
+      return acc
+    }, new Map())
+    return authorIds.map(id => countMap.get(String(id)) || 0)
+  }
 
 const serverStart = async () => {
     // Parent HTTP Server
@@ -86,7 +100,8 @@ const serverStart = async () => {
         expressMiddleware(apolloServer, {
             context: async ({ req, res }) => {
                 const currentUser = getUserFromAuth({ req, res })
-                return { currentUser }
+                const bookCountLoader = new DataLoader(batchBookCounts)
+                return { currentUser, bookCountLoader }
             },
         })
     )

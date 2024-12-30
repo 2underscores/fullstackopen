@@ -10,7 +10,7 @@ const pubsub = new PubSub()
 
 const assertLoggedIn = async (context) => {
     const currentUser = await context.currentUser
-    console.log({currentUser, context})
+    console.log({ currentUser, context })
     if (!currentUser) {
         console.log({ message: 'User not logged in', currentUser });
         // FIXME: This crashes whole server?
@@ -24,22 +24,20 @@ const assertLoggedIn = async (context) => {
 
 const resolvers = {
     Author: {
-        bookCount: async (root) => {
-            const books = await Book.find({})
-            const byAuthor = (b) => String(b.author) === root.id
-            return books.filter(byAuthor).length
+        // Using DataLoader pattern without the actual DataLoader library
+        bookCount: async (root, args, context, query) => {
+            // console.log({ root, args, context, query });          
+            const bookCountLoad = await context.bookCountLoader.load(root.id)
+            console.log({ bookCountLoad })
+            return bookCountLoad || 0
         }
     },
     Query: {
         bookCount: async (root, args, context) => {
-            const books = await Book.find({})
-            console.log({ books })
-            return books.length
+            return await Book.countDocuments({})
         },
         authorCount: async () => {
-            const authors = await Author.find({})
-            console.log({ authors });
-            return authors.length
+            return await Author.countDocuments({})
         },
         allBooks: async (root, args, context) => {
             console.log({ args, context });
